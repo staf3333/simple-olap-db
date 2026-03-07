@@ -12,6 +12,9 @@ Row-based storage is great for transactional workloads, but terrible for analyti
 - [ ] Implement a column-based storage engine
 - [ ] Benchmark analytical queries (aggregations, filters) across both
 - [ ] Understand I/O patterns — why column storage wins for OLAP
+
+### Stretch Goals
+
 - [ ] Add basic compression (run-length encoding, dictionary encoding)
 - [ ] Support a simple SQL-like query interface
 
@@ -21,9 +24,9 @@ Row-based storage is great for transactional workloads, but terrible for analyti
 |---------|---------------|--------|
 | Column-oriented storage | Ch. 3 — Column-Oriented Storage | 🔲 |
 | Row vs column tradeoffs | Ch. 3 — Comparing Row and Column Storage | 🔲 |
-| Compression (RLE, dictionary) | Ch. 3 — Column Compression | 🔲 |
-| Sort order in column stores | Ch. 3 — Sort Order in Column Storage | 🔲 |
-| Materialized views / data cubes | Ch. 3 — Aggregation | 🔲 |
+| Compression (RLE, dictionary) | Ch. 3 — Column Compression | 🔲 (stretch) |
+| Sort order in column stores | Ch. 3 — Sort Order in Column Storage | 🔲 (stretch) |
+| Materialized views / data cubes | Ch. 3 — Aggregation | 🔲 (stretch) |
 
 ## What I Learned
 
