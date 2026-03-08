@@ -3,6 +3,7 @@ package storage_test
 import (
 	"os"
 	"testing"
+	"reflect"
 
 	"github.com/staf/simple-olap-db/storage"
 )
@@ -24,8 +25,6 @@ func testSchema() storage.Schema {
 
 // TestRowStoreRoundTrip verifies that rows survive a write→read cycle.
 func TestRowStoreRoundTrip(t *testing.T) {
-	t.Skip("TODO: implement RowStore, then remove this skip")
-
 	dir, err := os.MkdirTemp("", "rowstore-test-*")
 	if err != nil {
 		t.Fatal(err)
@@ -35,11 +34,21 @@ func TestRowStoreRoundTrip(t *testing.T) {
 	schema := testSchema()
 	rows := testRows()
 
-	// TODO: create your RowStore, write rows, read them back,
-	// and verify they match.
-	_ = dir
-	_ = schema
-	_ = rows
+	filepath := dir + "/sales.jsonl"
+	rowStore := &storage.JsonRowStore{FilePath: filepath}
+	rowStore.Write(schema, rows)
+
+	readRows, err := rowStore.ReadAll(schema)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// if you get this error, it is likely that you are missing type conversion
+	if !reflect.DeepEqual(readRows, rows) {
+		t.Errorf("rows don't match! \nwant: %#v\ngot:%#v", rows, readRows)
+		t.Logf("original id type: %T, readback id type: %T", rows[0]["id"], readRows[0]["id"])
+
+	}
 }
 
 // TestColumnStoreRoundTrip verifies that columns survive a write→read cycle.
