@@ -51,6 +51,27 @@ func TestRowStoreRoundTrip(t *testing.T) {
 	}
 }
 
+func TestColumnStoreWriteOnly(t *testing.T) {
+	dir, err := os.MkdirTemp("", "colstore-test-*")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	schema := testSchema()
+	rows := testRows()
+	columns, err := storage.RowsToColumns(schema, rows)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	columnStore := &storage.SimpleColumnStore{ Directory: dir}
+	err = columnStore.Write(schema, columns)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("ColumnStore here: %s", dir) 
+}
+
 // TestColumnStoreRoundTrip verifies that columns survive a write→read cycle.
 func TestColumnStoreRoundTrip(t *testing.T) {
 	t.Skip("TODO: implement ColumnStore, then remove this skip")
