@@ -1,9 +1,11 @@
 package storage
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 )
 
 // TODO: Implement ColumnStore
@@ -57,7 +59,51 @@ func (s *SimpleColumnStore) Write(schema Schema, columns []Column) error {
 	return nil
 }
 
-// this function reads 
+// this function reads files from disk into array of columns
 func (s *SimpleColumnStore) ReadColumns(schema Schema, columnNames []string) ([]Column, error) {
-	return nil, nil
+	// for given directory, open each file and collect into column, store all the columns in a slice
+	// know the file paths from column names
+	var columns []Column
+
+	for _, colName := range(columnNames) {
+		colFilePath := filepath.Join(s.Directory, colName+".col")
+
+		colFile, err := os.Open(colFilePath)
+		if err != nil {
+			return nil, err
+		}
+		
+		var colType string
+		for _, schemaCol := range(schema.Columns) {
+			if schemaCol.Name == colName {
+				colType = schemaCol.Type
+			}
+		}
+		col := Column{Name: colName, Type: colType}
+		scanner := bufio.NewScanner(colFile)
+		for scanner.Scan() {
+			line := scanner.Text()
+			switch col.Type {
+			case TypeInt64:
+				val, err := strconv.ParseInt(line, 10, 64)
+				if err != nil {
+					return nil, err
+				}
+				col.IntData = append(col.IntData, val)
+			case TypeFloat64:
+				val, err := strconv.ParseFloat(line, 64)
+				if err != nil {
+					return nil, err
+				}
+				col.FloatData = append(col.FloatData, val)
+			case TypeString:
+				col.StringData = append(col.StringData, line)
+			}
+		}
+		colFile.Close()
+
+		columns = append(columns, col)
+	}
+
+	return columns, nil
 }

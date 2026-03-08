@@ -64,7 +64,7 @@ func TestColumnStoreWriteOnly(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	columnStore := &storage.SimpleColumnStore{ Directory: dir}
+	columnStore := &storage.SimpleColumnStore{Directory: dir}
 	err = columnStore.Write(schema, columns)
 	if err != nil {
 		t.Fatal(err)
@@ -74,8 +74,6 @@ func TestColumnStoreWriteOnly(t *testing.T) {
 
 // TestColumnStoreRoundTrip verifies that columns survive a write→read cycle.
 func TestColumnStoreRoundTrip(t *testing.T) {
-	t.Skip("TODO: implement ColumnStore, then remove this skip")
-
 	dir, err := os.MkdirTemp("", "colstore-test-*")
 	if err != nil {
 		t.Fatal(err)
@@ -89,17 +87,30 @@ func TestColumnStoreRoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// TODO: create your ColumnStore, write columns, read them back,
-	// and verify they match.
-	_ = dir
-	_ = columns
+	columnStore := &storage.SimpleColumnStore{Directory: dir}
+	err = columnStore.Write(schema, columns)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// get column names
+	var colNames []string
+	for _, col := range(columns) {
+		colNames = append(colNames, col.Name)
+	}
+	readColumns, err := columnStore.ReadColumns(schema, colNames)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(readColumns, columns) {
+		t.Errorf("columns don't match! \nwant: %#v\ngot:%#v", columns, readColumns)
+	}
 }
 
 // TestColumnStoreSelectiveRead verifies that ReadColumns only returns
 // the requested columns (the whole point of column storage!).
 func TestColumnStoreSelectiveRead(t *testing.T) {
-	t.Skip("TODO: implement ColumnStore, then remove this skip")
-
 	dir, err := os.MkdirTemp("", "colstore-selective-*")
 	if err != nil {
 		t.Fatal(err)
@@ -113,8 +124,25 @@ func TestColumnStoreSelectiveRead(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// TODO: write all columns, then read back ONLY "price" and "quantity".
-	// Verify you get exactly 2 columns with the correct data.
-	_ = dir
-	_ = columns
+	columnStore := &storage.SimpleColumnStore{Directory: dir}
+	err = columnStore.Write(schema, columns)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// get column names
+	colsToRead := []string {"price", "quantity"}
+	cols, err := columnStore.ReadColumns(schema, colsToRead)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(cols) != 2 {
+		t.Errorf("reading selective number of cols did not work as expected! wanted %d cols, got %d cols. Cols: %v", len(colsToRead), len(cols), cols)
+	}
+
+	expected := []storage.Column{columns[3], columns[4]}
+	if !reflect.DeepEqual(cols, expected) {
+	       t.Errorf("data from selectively read columns do not match!")
+	}
 }
