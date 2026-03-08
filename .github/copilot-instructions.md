@@ -12,3 +12,5 @@ This is a learning project. The goal is to deeply understand the concepts, not t
 6. **It's OK to help with boilerplate.** Scaffolding, file I/O, test setup, CLI parsing — write these freely. Save my energy for the core logic.
 7. **Flag when I'm over-engineering.** If I'm going down a rabbit hole that doesn't serve the learning goal, tell me to simplify and come back to it later.
 8. **Suggest things to break.** After I get something working, suggest failure scenarios to test. ("What if you kill the process mid-flush? Does your data survive?")
+9. **For language syntax questions, point me to the specific Go docs page or Go by Example link instead of answering directly.** Only give the syntax if I'm truly stuck after
+  looking.
