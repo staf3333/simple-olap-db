@@ -11,8 +11,8 @@ Row-based storage is great for transactional workloads, but terrible for analyti
 - [x] Implement a row-based storage engine as a baseline
 - [x] Implement a column-based storage engine
 - [x] Implement query logic (SUM) on both stores
-- [ ] Benchmark analytical queries (aggregations, filters) across both
-- [ ] Understand I/O patterns — why column storage wins for OLAP
+- [x] Benchmark analytical queries (aggregations, filters) across both
+- [x] Understand I/O patterns — why column storage wins for OLAP
 
 ### Stretch Goals
 
@@ -40,6 +40,16 @@ When unmarshaling JSON into `map[string]any`, Go decodes all numbers as `float64
 ### Column store reads only what you need
 For `SUM(price)` on a 6-column table, the column store reads ~1/6th the data. Scale to 100+ columns and you're reading 1% of the data. The win isn't a clever algorithm — it's just data layout matching access patterns.
 
+### 42x faster at 1M rows
+Benchmarked `SUM(price)` on 1 million rows:
+
+| Store | Time | Iterations |
+|-------|------|------------|
+| Row store (JSON lines) | 2,105ms | 1 |
+| Column store (text per column) | 49ms | 24 |
+
+The row store reads, parses, and unmarshals every field of every row — even though we only need `price`. The column store reads one small file of numbers. The gap isn't a micro-optimization — it's architectural. This is why OLAP systems use columnar storage.
+
 ## Getting Started
 
 ```bash
@@ -60,7 +70,8 @@ simple-olap-db/
 │   ├── types.go             # Column, Row, Schema, interfaces, helpers
 │   ├── row_store.go         # JSON lines row store (Write, ReadAll, SUM)
 │   ├── column_store.go      # Text-based column store (Write, ReadColumns, SUM)
-│   └── storage_test.go      # Round-trip, selective read, and query tests
+│   ├── storage_test.go      # Round-trip, selective read, and query tests
+│   └── storage_bench_test.go # Benchmarks comparing row vs column store
 ```
 
 ## Tech
