@@ -14,9 +14,13 @@ Row-based storage is great for transactional workloads, but terrible for analyti
 - [x] Benchmark analytical queries (aggregations, filters) across both
 - [x] Understand I/O patterns — why column storage wins for OLAP
 
+### Next Up
+
+- [ ] **Dictionary encoding** on string columns (e.g., `category` — 5 unique values across 1M rows). Replace repeated strings with integer IDs, store a lookup table. Should dramatically reduce file size and speed up scans.
+
 ### Stretch Goals
 
-- [ ] Add basic compression (run-length encoding, dictionary encoding)
+- [ ] Run-length encoding on sorted columns
 - [ ] Support a simple SQL-like query interface
 
 ## Key Concepts
