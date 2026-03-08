@@ -46,7 +46,7 @@ type Schema struct {
 }
 
 // Row is a single row represented as a map of column name to value.
-type Row map[string]interface{}
+type Row map[string]any
 
 // RowStore is the interface you'll implement for row-oriented storage.
 type RowStore interface {
