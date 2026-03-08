@@ -107,3 +107,35 @@ func (s *SimpleColumnStore) ReadColumns(schema Schema, columnNames []string) ([]
 
 	return columns, nil
 }
+
+func (s *SimpleColumnStore) SUM(schema Schema, columnName string) (float64, error) {
+	columns, err := s.ReadColumns(schema, []string{columnName})
+	if err != nil {
+		return 0, err
+	}
+	// schema will tell you what is the column type and what you need to iterate over
+	var colType string
+	for _, schemaCol := range(schema.Columns) {
+		if schemaCol.Name == columnName {
+			colType = schemaCol.Type
+			if colType != TypeInt64 && colType != TypeFloat64 {
+				return 0, fmt.Errorf("Cannot sum column of type %s", schemaCol.Type)
+			}
+			break
+		}
+	}
+
+	var sum float64
+	switch colType {
+		case TypeInt64:
+			for _, val := range(columns[0].IntData) {
+				sum += float64(val)
+			}
+		case TypeFloat64:
+			for _, val := range(columns[0].FloatData) {
+				sum += val
+			}
+	}
+
+	return sum, nil
+}

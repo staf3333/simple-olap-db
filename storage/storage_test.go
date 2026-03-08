@@ -36,7 +36,10 @@ func TestRowStoreRoundTrip(t *testing.T) {
 
 	filepath := dir + "/sales.jsonl"
 	rowStore := &storage.JsonRowStore{FilePath: filepath}
-	rowStore.Write(schema, rows)
+	err = rowStore.Write(schema, rows)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	readRows, err := rowStore.ReadAll(schema)
 	if err != nil {
@@ -144,5 +147,52 @@ func TestColumnStoreSelectiveRead(t *testing.T) {
 	expected := []storage.Column{columns[3], columns[4]}
 	if !reflect.DeepEqual(cols, expected) {
 	       t.Errorf("data from selectively read columns do not match!")
+	}
+}
+
+// TestStoreSumsAsExpected verify that the SUM functions on each type of store return expected value
+func TestStoreSumsAsExpected(t *testing.T) {
+	dir, err := os.MkdirTemp("", "both-store-sum-*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+
+	schema := testSchema()
+	rows := testRows()
+	columns, err := storage.RowsToColumns(schema, rows)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// create column store
+	columnStore := &storage.SimpleColumnStore{Directory: dir}
+	err = columnStore.Write(schema, columns)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//create row store
+	filepath := dir + "/sales.jsonl"
+	rowStore := &storage.JsonRowStore{FilePath: filepath}
+	err = rowStore.Write(schema, rows)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	colToSum := "price"
+	rowSum, err := rowStore.SUM(schema, colToSum)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	colSum, err := columnStore.SUM(schema, colToSum)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedSum := float64(135.23)
+	if rowSum != colSum || rowSum != expectedSum {
+		t.Errorf("Unexpected sum... expected %v rowSum=%v, colSum=%v", expectedSum, rowSum, colSum)
 	}
 }

@@ -1,8 +1,10 @@
 package storage
+
 import (
-	"encoding/json"
-	"os"
 	"bufio"
+	"encoding/json"
+	"fmt"
+	"os"
 )
 type JsonRowStore struct {
 	FilePath string
@@ -53,4 +55,39 @@ func (s *JsonRowStore) ReadAll(schema Schema) ([]Row, error) {
 	}
 
 	return rows, nil
+}
+
+func (s *JsonRowStore) SUM(schema Schema, columnName string) (float64, error) {
+	rows, err := s.ReadAll(schema)
+	if err != nil {
+		return 0, err
+	}
+
+	// check that the column name is in schema before iterating, because we wont know if it exists in map
+	var isColInSchema bool
+	var colType string
+	for _, schemaCol := range(schema.Columns) {
+		if columnName == schemaCol.Name {
+			colType = schemaCol.Type
+			if colType != TypeInt64 && colType != TypeFloat64 {
+				return 0, fmt.Errorf("Cannot sum column of type %s", schemaCol.Type)
+			}
+			isColInSchema = true
+			break
+		}
+	}
+	if !isColInSchema {
+		return 0, fmt.Errorf("col %s does not exist in schema", columnName)
+	}
+
+	var sum float64
+	for _, row := range(rows) {
+		switch colType {
+		case TypeInt64:
+			sum += float64(row[columnName].(int64))
+		case TypeFloat64:
+			sum += row[columnName].(float64)
+		}
+	}
+	return sum, nil
 }
